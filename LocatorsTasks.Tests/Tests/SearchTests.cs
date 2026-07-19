@@ -41,7 +41,7 @@ namespace LocatorsTasks.Tests.Tests
         [TestCase("Java", "Kazakhstan")]
         [TestCase("C#", "Poland")]
         [TestCase("Python", "Germany")]
-        public void careers_searchText_returnsResults(string position, string country)
+        public void Careers_SearchText_ReturnsResults(string position, string country)
         {
 
             // Click country input

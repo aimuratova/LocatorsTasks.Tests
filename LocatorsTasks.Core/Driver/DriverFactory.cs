@@ -16,10 +16,14 @@ namespace LocatorsTasks.Core.Driver
             {
                 case BrowserType.Chrome:
                     ChromeOptions options = new();
-                    options.AddArgument("disable-infobars");
-                    options.AddArgument("--incognito");
+                    options.AddArgument("--start-maximized");
+                    options.AddArgument("--disable-notifications");
+                    options.AddArgument("--disable-popup-blocking");
 
                     return new ChromeDriver(ChromeDriverService.CreateDefaultService(), options, TimeSpan.FromSeconds(30));
+
+                case BrowserType.Firefox:
+                    return new OpenQA.Selenium.Firefox.FirefoxDriver();
                 default:
                     throw new ArgumentException($"Unsupported browser type: {browserType}");
             }

@@ -9,7 +9,7 @@ namespace LocatorsTasks.Core.Driver
     public enum BrowserType
     {
         Chrome,
-        //Firefox,
+        Firefox,
         //Edge,
     }
 }
