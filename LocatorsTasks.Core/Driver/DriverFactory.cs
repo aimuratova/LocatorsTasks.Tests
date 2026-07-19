@@ -17,9 +17,7 @@ namespace LocatorsTasks.Core.Driver
                 case BrowserType.Chrome:
                     ChromeOptions options = new();
                     options.AddArgument("disable-infobars");
-                    options.AddArgument(@"--user-data-dir=C:\SeleniumProfile");
-
-                    //options.AddArgument("--incognito");
+                    options.AddArgument("--incognito");
 
                     return new ChromeDriver(ChromeDriverService.CreateDefaultService(), options, TimeSpan.FromSeconds(30));
                 default:
