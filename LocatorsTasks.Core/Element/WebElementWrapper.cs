@@ -14,61 +14,63 @@ namespace LocatorsTasks.Core.Element
     {
         private readonly IWebDriverWrapper _webDriverWrapper;
         private readonly TimeSpan _timeout;
+        private readonly By _by;
 
-        public WebElementWrapper(IWebDriverWrapper webDriverWrapper, int waitTimeInSeconds)
+        public WebElementWrapper(IWebDriverWrapper webDriverWrapper, By by, int waitTimeInSeconds = 10)
         {
             _webDriverWrapper = webDriverWrapper;
+            _by = by;
             _timeout = TimeSpan.FromSeconds(waitTimeInSeconds);
         }
 
-        public void Click(By by)
+        public void Click()
         {
-            var element = WaitForElementToBePresent(_webDriverWrapper, by, _timeout);
+            var element = WaitForElementToBePresent(_webDriverWrapper, _by, _timeout);
             new Actions(_webDriverWrapper.GetWebDriver()).MoveToElement(element).Click().Perform();
         }
 
-        public void EnterText(By by, string text)
+        public void EnterText(string text)
         {
-            var element = WaitForElementToBePresent(_webDriverWrapper, by, _timeout);
+            var element = WaitForElementToBePresent(_webDriverWrapper, _by, _timeout);
             element.Clear();
             element.SendKeys(text);
         }
 
-        public void ClearText(By by)
+        public void ClearText()
         {
-            var element = WaitForElementToBePresent(_webDriverWrapper, by, _timeout);
+            var element = WaitForElementToBePresent(_webDriverWrapper, _by, _timeout);
 
             element.Click();
             element.SendKeys(Keys.Control + "a");
             element.SendKeys(Keys.Delete);
         }
 
-        public string GetText(By by)
+        public string GetText()
         {
-            var element = WaitForElementToBePresent(_webDriverWrapper, by, _timeout);
+            var element = WaitForElementToBePresent(_webDriverWrapper, _by, _timeout);
             return element.Text;
         }
 
-        public IWebElement FindElement(By by)
+        public IWebElement FindElement()
         {
-            var elementPresent = WaitForElementToBePresent(_webDriverWrapper, by, _timeout);
+            var elementPresent = WaitForElementToBePresent(_webDriverWrapper, _by, _timeout);
             return elementPresent;
         }
 
-        public IWebElement FindChildByName(By byParent, string childName)
+        public IWebElement FindChildByName(string childName)
         {
-            var elementParent = WaitForElementToBePresent(_webDriverWrapper, byParent, _timeout);
+            var elementParent = WaitForElementToBePresent(_webDriverWrapper, _by, _timeout);
             return elementParent.FindElement(By.Name(childName));
         }
 
-        public void ClickAndSendAction(IWebElement element, string textToSend)
-        {
-            var clickAndSendKeysActions = new Actions(_webDriverWrapper.GetWebDriver());
-            clickAndSendKeysActions.Click(element)
-                .Pause(TimeSpan.FromSeconds(1))
-                .SendKeys(textToSend)
-                .Perform();
-        }
+        //public void ClickAndSendAction(IWebElement element, string textToSend)
+        //{
+        //    var clickAndSendKeysActions = new Actions(_webDriverWrapper.GetWebDriver());
+        //    clickAndSendKeysActions.Click(element)
+        //        .Pause(TimeSpan.FromSeconds(1))
+        //        .SendKeys(textToSend)
+        //        .Perform();
+        //}
 
         public IWebElement WaitForElementToBePresent(IWebDriverWrapper webDriverWrapper, By by, TimeSpan timeout)
         {
@@ -86,6 +88,32 @@ namespace LocatorsTasks.Core.Element
                     Console.WriteLine("WaitForElementToBePresent method: 'NoSuchElementException' is found.");
                 }
                 return null;
+            });
+        }
+
+        public IWebElement FindChildBy(By by)
+        {
+            var parent = WaitForElementToBePresent(_webDriverWrapper, _by, _timeout);
+
+            var wait = new WebDriverWait(_webDriverWrapper.GetWebDriver(), _timeout);
+
+            return wait.Until(_ =>
+            {
+                try
+                {
+                    var child = parent.FindElement(by);
+                    return child.Displayed ? child : null;
+                }
+                catch (NoSuchElementException)
+                {
+                    return null;
+                }
+                catch (StaleElementReferenceException)
+                {
+                    // Reacquire the parent if it became stale
+                    parent = WaitForElementToBePresent(_webDriverWrapper, _by, _timeout);
+                    return null;
+                }
             });
         }
     }

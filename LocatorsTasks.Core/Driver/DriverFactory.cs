@@ -20,6 +20,10 @@ namespace LocatorsTasks.Core.Driver
                     options.AddArgument("--disable-notifications");
                     options.AddArgument("--disable-popup-blocking");
 
+                    options.AddArgument(@"user-data-dir=C:\Users\Myrzaliyev\Desktop\Epam\Work\Selenium");
+
+                    options.AddArgument("--profile-directory=Default");
+
                     return new ChromeDriver(ChromeDriverService.CreateDefaultService(), options, TimeSpan.FromSeconds(30));
 
                 case BrowserType.Firefox:

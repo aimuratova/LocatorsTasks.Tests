@@ -10,13 +10,14 @@ namespace LocatorsTasks.Core.Element
 {
     public interface IWebElementWrapper
     {
-        void Click(By by);
-        void EnterText(By by, string text);
-        void ClearText(By by);
-        string GetText(By by);
-        IWebElement FindElement(By by);
-        IWebElement FindChildByName(By byParent, string childName);
-        void ClickAndSendAction(IWebElement element, string textToSend);
+        void Click();
+        void EnterText(string text);
+        void ClearText();
+        string GetText();
+        IWebElement FindElement();
+        IWebElement FindChildByName(string childName);
+        //void ClickAndSendAction(IWebElement element, string textToSend);
         IWebElement WaitForElementToBePresent(IWebDriverWrapper webDriverWrapper, By by, TimeSpan timeout);
+        IWebElement FindChildBy(By by);
     }
 }
