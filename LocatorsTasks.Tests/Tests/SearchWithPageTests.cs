@@ -13,15 +13,17 @@ namespace LocatorsTasks.Tests.Tests
     public class SearchWithPageTests : BaseTest
     {
         [TestCase("Java","Poland")]
+        [TestCase("C#", "Poland")]
+        [TestCase("Python", "Germany")]
         public void SearchWithPage(string jobTitle, string country)
         {
             var mainPage = new MainPage(DriverWrapper);
-            //mainPage.AcceptCookiesIfDisplayed();
-            
+            mainPage.AcceptCookiesIfDisplayed();
+
             var careersPage = mainPage.NavigateToCareersPage();
             
             var jobsPage = careersPage.NavigateToJobsPage();
-            //jobsPage.AcceptCookiesIfDisplayed();
+            jobsPage.AcceptCookiesIfDisplayed();
 
             jobsPage.SelectCountry(country);
             WaitForLoader();
@@ -34,7 +36,6 @@ namespace LocatorsTasks.Tests.Tests
             WaitForLoader();
 
             jobsPage.LastSearchResultClick();
-            WaitForLoader();
 
             var resultDescription = jobsPage.GetResultDescription();
 

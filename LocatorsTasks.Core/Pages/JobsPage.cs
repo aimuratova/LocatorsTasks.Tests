@@ -53,27 +53,23 @@ namespace LocatorsTasks.Core.Pages
 
         public string GetResultDescription()
         {
-            //return lastSearchResult.GetText();
-            var wait = new WebDriverWait(driver.GetWebDriver(), TimeSpan.FromSeconds(10));
-
-            var description = wait.Until(d =>
-            {
-                var el = d.FindElement(By.XPath("(//div[@data-testid='accordion-section-container'])[last()]"));
-                el.Click();
-                return !string.IsNullOrWhiteSpace(el.Text) ? el : null;
-            });
-
-            return description.Text;
+            return lastSearchResult.GetText();
         }
 
         public void LastSearchResultClick()
         {
             lastSearchResult.Click();
-            //var wait = new WebDriverWait(driver.GetWebDriver(), TimeSpan.FromSeconds(10));
+                        
+            var wait = new WebDriverWait(driver.GetWebDriver(), TimeSpan.FromSeconds(10));
 
-            //var result = wait.Until(d => lastSearchResult.FindElement());
+            wait.Until(d =>
+            {
+                var applyButton = d.FindElement(By.XPath("(//*[@id='cta_job_apply_unauthorized'])[last()]"));
 
-            //result.Click();
+                return applyButton.Displayed &&
+                       applyButton.Location.Y > 0 &&
+                       applyButton.Size.Height > 0;
+            });
         }
 
         public void SelectCountry(string country)
