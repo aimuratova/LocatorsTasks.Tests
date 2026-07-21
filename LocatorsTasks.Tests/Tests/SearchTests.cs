@@ -2,6 +2,8 @@
 using LocatorsTasks.Core.Utilities;
 using LocatorsTasks.Tests.Base;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
+using System.Threading;
 using System.Xml.Linq;
 
 namespace LocatorsTasks.Tests.Tests
@@ -15,13 +17,7 @@ namespace LocatorsTasks.Tests.Tests
         public void SetUp()
         {
             Wait.Until(d => d.FindElement(By.PartialLinkText("Care"))).Click();
-
-            Wait.Until(d =>
-            {
-                var button = d.FindElement(By.Id("onetrust-accept-btn-handler"));
-                button.Click();
-                return true;
-            });
+            AcceptCookiesIfExists();
 
             var startButton = Wait.Until(d =>
             {
@@ -29,13 +25,7 @@ namespace LocatorsTasks.Tests.Tests
                 return elements.Any() ? elements.First() : null;
             });
             startButton.Click();
-
-            Wait.Until(d =>
-            {
-                var button = d.FindElement(By.Id("onetrust-accept-btn-handler"));
-                button.Click();
-                return true;
-            });
+            AcceptCookiesIfExists();
         }
 
         [TestCase("Java", "Kazakhstan")]
@@ -43,28 +33,43 @@ namespace LocatorsTasks.Tests.Tests
         [TestCase("Python", "Germany")]
         public void Careers_SearchText_ReturnsResults(string position, string country)
         {
-
-            // Click country input
-            var countryInput = Wait.Until(d =>
-                d.FindElement(By.XPath("//input[@aria-label='Choose your country']")));
+            var countryInput = Wait.Until(d => d.FindElement(By.XPath("//input[@aria-label='Choose your country']")));
 
             countryInput.Click();
-            countryInput.Clear();
+            countryInput.Clear();                        
             countryInput.SendKeys(country);
 
-            var countryOption = Wait.Until(d =>
+            var countryDropdown = Wait.Until(_ =>
             {
-                var options = d.FindElements(
-                    By.XPath($"//div[@data-testid='dropdown-option'][contains(., '{country}')]"));
+                countryInput.Click();
+                var countryDropdown = Wait.Until(d => d.FindElement(By.XPath($"//div[contains(@class, 'dropdown__menu')]")));
 
-                return options.Any() ? options.First() : null;
+                return countryDropdown.Displayed ? countryDropdown : null;
+            });
+
+            var countryOption = Wait.Until(_ =>
+            {
+                try
+                {
+                    var child = countryDropdown.FindElement(By.XPath($"//div[@data-testid='dropdown-option'][contains(., '{country}')]"));
+                    return child.Displayed ? child : null;
+                }
+                catch (NoSuchElementException)
+                {
+                    return null;
+                }
+                catch (StaleElementReferenceException)
+                {
+                    // Reacquire the parent if it became stale
+                    countryDropdown = Wait.Until(d => d.FindElement(By.XPath($"//div[contains(@class, 'dropdown__menu')]")));
+                    return null;
+                }
             });
 
             countryOption.Click();
-
             WaitForLoader();
 
-            // Name
+
             var keyword = Wait.Until(d => d.FindElement(By.Name("search")));
             keyword.Clear();
             keyword.SendKeys(position);
@@ -73,17 +78,30 @@ namespace LocatorsTasks.Tests.Tests
 
             Wait.Until(d => d.FindElement(By.XPath("//span[normalize-space()='Remote']"))).Click();
 
-            var searchButton = DriverWrapper.GetWebDriver().FindElements(By.CssSelector("button[type='submit']")).First(b => b.Displayed && b.Enabled);
+            var searchButton = Wait.Until(d =>
+            {
+                var element = d.FindElements(By.CssSelector("button[type='submit']"));
+                return element.Count > 0 ? element.First(b => b.Displayed && b.Enabled) : null;
+            });
             searchButton.Click();
 
-            // XPath
-            var latestJob =
-                Wait.Until(d => d.FindElement(By.XPath("(//div[@data-testid='accordion-section-container'])[last()]")));
+            WaitForLoader();
+
+            var latestJob = Wait.Until(d => d.FindElement(By.XPath("(//div[@data-testid='accordion-section-container'])[last()]")));
             latestJob.Click();
 
-            Assert.That(latestJob.Text.ToLower(), Does.Contain(position.ToLower()));
+            Wait.Until(d =>
+            {
+                var applyButton = d.FindElement(By.XPath("(//*[@id='cta_job_apply_unauthorized'])[last()]"));
 
-            //Assert.Pass();
+                return applyButton.Displayed &&
+                       applyButton.Location.Y > 0 &&
+                       applyButton.Size.Height > 0;
+            });
+
+            var resultDescription = Wait.Until(d => d.FindElement(By.XPath("(//div[@data-testid='accordion-section-container'])[last()]"))).Text;
+
+            Assert.That(resultDescription.ToLower(), Does.Contain(position.ToLower()));
         }
 
         private void WaitForLoader()
@@ -95,6 +113,22 @@ namespace LocatorsTasks.Tests.Tests
 
                 return loaders.Count == 0 || !loaders.Any(x => x.Displayed);
             });
+        }
+
+        private void AcceptCookiesIfExists()
+        {
+            // Accept cookies if displayed
+            try
+            {
+                var acceptButton = new WebDriverWait(DriverWrapper.GetWebDriver(), TimeSpan.FromSeconds(5))
+                    .Until(d => d.FindElement(By.Id("onetrust-accept-btn-handler")));
+
+                acceptButton.Click();
+            }
+            catch (WebDriverTimeoutException)
+            {
+                // Cookie banner was not displayed
+            }
         }
     }
 }

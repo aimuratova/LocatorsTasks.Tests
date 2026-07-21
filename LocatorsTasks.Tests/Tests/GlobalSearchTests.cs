@@ -17,7 +17,7 @@ namespace LocatorsTasks.Tests.Tests
         [TestCase("Automation")]
         public void GlobalSearch_ShouldReturnRelevantResults(string searchText)
         {
-            //AcceptCookiesIfExists();
+            AcceptCookiesIfExists();
 
             var searchIcon = Wait.Until(d => d.FindElement(By.CssSelector("button[class*='search']")));
             searchIcon.Click();
@@ -35,9 +35,7 @@ namespace LocatorsTasks.Tests.Tests
                     var elements = container.FindElements(By.XPath(".//article[contains(@class,'search-results__item')]"));
                     return elements.Count > 0 ? elements : null;
                 });
-
-            var notFoundResults = resultLinks.Where(x=>!x.Text.Contains(searchText)).ToList();
-
+                        
             bool allContainKeyword = resultLinks.All(link => link.Text.Contains(searchText, StringComparison.OrdinalIgnoreCase));
             Assert.That(allContainKeyword, Is.True, $"Not all search results contain '{searchText}'");
         }
