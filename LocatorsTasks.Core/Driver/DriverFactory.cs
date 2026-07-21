@@ -24,6 +24,12 @@ namespace LocatorsTasks.Core.Driver
 
                     options.AddArgument("--profile-directory=Default");
 
+                    var downloadFolder = Path.Combine(Path.GetTempPath(), "Downloads");
+                    options.AddUserProfilePreference("download.default_directory", downloadFolder);
+                    options.AddUserProfilePreference("download.prompt_for_download", false);
+                    options.AddUserProfilePreference("download.directory_upgrade", true);
+                    options.AddUserProfilePreference("plugins.always_open_pdf_externally", true);
+
                     return new ChromeDriver(ChromeDriverService.CreateDefaultService(), options, TimeSpan.FromSeconds(30));
 
                 case BrowserType.Firefox:
